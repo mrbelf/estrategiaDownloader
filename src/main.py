@@ -11,4 +11,4 @@ with open("../data.json", "r") as file:
     data = json.load(file)
 
 
-get_video_links(login_url, data)
+get_video_links(test_url, data)
