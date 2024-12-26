@@ -33,6 +33,7 @@ def login(driver, data):
     
     time.sleep(LOGIN_DELAY)
 
+# Course
 def get_course_title(course_element):
     return course_element.find_element(By.CSS_SELECTOR, 'h1[class="sc-ksYbfQ fVYfnB"]').text
     
@@ -56,6 +57,16 @@ def enter_course(driver, courseName):
     index = get_course_index(driver ,courseName)
     get_course(driver,index).click()
     time.sleep(COURSE_SELECTION_DELAY)
+#end Course
+
+#Lessons
+def get_lessons(driver):
+    return driver.find_elements(By.CSS_SELECTOR, 'div[class="LessonCollapseHeader-title"]')
+
+def get_lesson_titles(driver):
+    return list(map(lambda lesson: lesson.find_element(By.XPATH, './*').text,get_lessons(driver)))
+
+#end Lessons
 
 def get_videos_for_open_class(driver):
     links = []
@@ -109,11 +120,24 @@ def get_all_courses(url, data):
     driver = start_driver(url)
     try:
         login(driver, data)
+
         courses = get_courses(driver)
+
         course_titles = list(map(lambda el: get_course_title(el),courses))
     finally:
         driver.quit()
     return course_titles
+
+def get_all_lessons(url, data, course):
+    driver = start_driver(url)
+    try:
+        login(driver, data)
+        enter_course(driver, course)
+
+        lessons = get_lesson_titles(driver)
+    finally:
+        driver.quit()
+    return lessons
 
 def get_video_links(url, data, course):
     driver = start_driver(url)
@@ -121,11 +145,9 @@ def get_video_links(url, data, course):
     try:
         login(driver, data)
         
-        # here we'll need to iterate for each course
         enter_course(driver, course)
 
-        # here we'll need to iterate for each class
-        lessons = driver.find_elements(By.CSS_SELECTOR, 'div[class="LessonCollapseHeader-title"]')
+        lessons = get_lessons(driver)
 
         # for now we'll click the first one
         lessons[0].click() 

@@ -1,5 +1,6 @@
-from estrategiaVideoScraper import get_video_links
 from estrategiaVideoScraper import get_all_courses
+from estrategiaVideoScraper import get_all_lessons
+from estrategiaVideoScraper import get_video_links
 from fileManager import FileManager
 import json
 
@@ -13,7 +14,11 @@ with open("../data.json", "r", encoding='utf-8') as file:
 fm = FileManager(data["save_path"])
 
 courses = get_all_courses(courses_url, data)
-fm.add_all_courses(courses)
+#fm.add_all_courses(courses)
 
-for course in courses[:3]:
-    links = get_video_links(courses_url, data, course)
+for course in courses[:1]:
+    fm.select_course(course)
+    lessons = get_all_lessons(courses_url, data, course)
+    for lesson in lessons:
+        fm.select_lesson(lesson)
+    #links = get_video_links(courses_url, data, course)
