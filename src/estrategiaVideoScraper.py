@@ -8,7 +8,7 @@ START_DRIVER_DELAY = 4
 LOGIN_FILL_DELAY = .5
 LOGIN_DELAY = 8
 COURSE_SELECTION_DELAY = 5
-LESSON_SELECTION_DELAY = 1
+LESSON_SELECTION_DELAY = 5
 VIDEO_SELECTION_DELAY = 1
 SCROLL_DELAY = .5
 
@@ -33,16 +33,27 @@ def login(driver, data):
     
     time.sleep(LOGIN_DELAY)
 
+def get_course_title(course_element):
+    return course_element.find_element(By.CSS_SELECTOR, 'h1[class="sc-ksYbfQ fVYfnB"]').text
+    
+
 def get_courses(driver):
     return driver.find_elements(By.CSS_SELECTOR, "a[class='sc-cHGsZl cbCIXA'")
 
 def total_courses(driver):
     return len(get_courses(driver))
 
+def get_course_index(driver, name):
+    for index,course in enumerate(get_courses(driver)):
+        if get_course_title(course) == name:
+            return index
+    print(f'Course of name {name} not found')
+
 def get_course(driver, index):
     return get_courses(driver)[index]
 
-def enter_course(driver, index):
+def enter_course(driver, courseName):
+    index = get_course_index(driver ,courseName)
     get_course(driver,index).click()
     time.sleep(COURSE_SELECTION_DELAY)
 
@@ -99,19 +110,19 @@ def get_all_courses(url, data):
     try:
         login(driver, data)
         courses = get_courses(driver)
-        course_titles = list(map(lambda el: el.find_element(By.CSS_SELECTOR, 'h1[class="sc-ksYbfQ fVYfnB"]').text,courses))
+        course_titles = list(map(lambda el: get_course_title(el),courses))
     finally:
         driver.quit()
     return course_titles
 
-def get_video_links(url, data):
+def get_video_links(url, data, course):
     driver = start_driver(url)
     
     try:
         login(driver, data)
         
         # here we'll need to iterate for each course
-        enter_course(driver,0)
+        enter_course(driver, course)
 
         # here we'll need to iterate for each class
         lessons = driver.find_elements(By.CSS_SELECTOR, 'div[class="LessonCollapseHeader-title"]')
@@ -124,8 +135,7 @@ def get_video_links(url, data):
 
         # here we'll need to iterate for each video
         links = get_videos_for_open_class(driver)
-        
-        print(links)
-
     finally:
         driver.quit()
+
+    return links
