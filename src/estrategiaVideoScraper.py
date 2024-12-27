@@ -128,6 +128,22 @@ def open_lesson(driver, lesson_name):
     lesson.click()
     print(f'{lesson_name} clicked')
     time.sleep(LESSON_SELECTION_DELAY)
+
+def get_pdf_from_open_lesson(driver):
+    pdf_buttons_parent = driver.find_element(By.CSS_SELECTOR, 'div[class="LessonButtonList"]')
+    pdf_buttons = pdf_buttons_parent.find_elements(By.XPATH, "./*")
+    
+    original_pdf_button = None
+    for button in pdf_buttons:
+        element_with_text = button.find_elements(By.XPATH, ".//*[contains(text(),'versão original')]")
+        if element_with_text:
+            original_pdf_button = button
+
+    if original_pdf_button:
+        return original_pdf_button.get_attribute("href")
+    print('Could not find pdf')
+    
+
 #end Lessons
 
 def get_videos_for_open_class(driver):
@@ -216,3 +232,15 @@ def get_video_links(url, data, course, lesson):
         close_driver(driver)
 
     return links
+
+def get_pdf_link(url, data, course, lesson):
+    driver = start_driver(url)
+
+    try:
+        login(driver, data)
+        enter_course(driver, course)
+        open_lesson(driver, lesson)
+        return get_pdf_from_open_lesson(driver)
+        
+    finally:
+        close_driver(driver)

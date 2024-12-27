@@ -1,5 +1,5 @@
 import os
-from videoDownloader import download_video
+from downloader import *
 
 ILLEGAL_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
 REPLACE_CHAR = '_'
@@ -54,3 +54,6 @@ class FileManager:
     def add_video(self, title, url):
         formatted_title = self._format_path(title)
         download_video(url, os.path.join(self._get_current_path(), formatted_title))
+    
+    def add_pdf(self, url):
+        download_pdf(url, os.path.join(self._get_current_path(), self.selected_lesson+'.pdf'))
