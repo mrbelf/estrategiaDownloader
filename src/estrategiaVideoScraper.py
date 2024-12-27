@@ -3,8 +3,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+import sys
 import time
+import os
 
+LOGS_ENABLED = False
+SELENIUM_LOG_LEVEL = logging.CRITICAL
+SELENIUM_HEADLESS = False
 START_DRIVER_DELAY = 5
 LOGIN_FILL_DELAY = .2
 LOGIN_DELAY = 10
@@ -15,10 +21,36 @@ SCROLL_DELAY = .2
 
 
 def start_driver(url):
-    driver = webdriver.Chrome()
+    logging.getLogger('selenium').setLevel(SELENIUM_LOG_LEVEL)
+    logging.getLogger('urllib3').setLevel(SELENIUM_LOG_LEVEL)
+    logging.getLogger('selenium.webdriver.remote.remote_connection').setLevel(SELENIUM_LOG_LEVEL)
+
+    chrome_options = Options()
+    if not LOGS_ENABLED:
+        sys.stdout = sys.stderr = open(os.devnull, 'w')
+
+        logging.getLogger('tensorflow').setLevel(logging.ERROR)
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-logging")
+        chrome_options.add_argument("--log-level=3")
+        chrome_options.add_argument("--silent")
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
+
+    if SELENIUM_HEADLESS:
+        chrome_options.add_argument("--headless")
+
+
+    driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
     time.sleep(START_DRIVER_DELAY)
     return driver
+
+def close_driver(driver):
+    driver.quit()
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
 
 def login(driver, data):
     login_element = driver.find_element(By.NAME, "loginField")
@@ -147,7 +179,6 @@ def get_videos_for_open_class(driver):
 
 #=============== For External usage ===============#
 def get_all_courses(url, data):
-    logging.getLogger('selenium').setLevel(logging.WARNING)
     driver = start_driver(url)
     try:
         login(driver, data)
@@ -156,11 +187,10 @@ def get_all_courses(url, data):
 
         course_titles = list(map(lambda el: get_course_title(el),courses))
     finally:
-        driver.quit()
+        close_driver(driver)
     return course_titles
 
 def get_all_lessons(url, data, course):
-    logging.getLogger('selenium').setLevel(logging.WARNING)
     driver = start_driver(url)
     try:
         login(driver, data)
@@ -168,11 +198,10 @@ def get_all_lessons(url, data, course):
 
         lessons = get_lesson_titles(driver)
     finally:
-        driver.quit()
+        close_driver(driver)
     return lessons
 
 def get_video_links(url, data, course, lesson):
-    logging.getLogger('selenium').setLevel(logging.WARNING)
     driver = start_driver(url)
     
     try:
@@ -184,6 +213,6 @@ def get_video_links(url, data, course, lesson):
         
         links = get_videos_for_open_class(driver)
     finally:
-        driver.quit()
+        close_driver(driver)
 
     return links
