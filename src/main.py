@@ -4,21 +4,31 @@ from estrategiaVideoScraper import get_video_links
 from fileManager import FileManager
 import json
 
-login_url = "https://perfil.estrategia.com/login?source=legado-polvo&target=https%3A%2F%2Fwww.estrategiaconcursos.com.br%2Faccounts%2Flogin%3F"
 courses_url = "https://www.estrategiaconcursos.com.br/app/dashboard/cursos" 
 
 with open("../data.json", "r", encoding='utf-8') as file:
     data = json.load(file)
 
-
 fm = FileManager(data["save_path"])
 
+print(f'Getting courses list')
 courses = get_all_courses(courses_url, data)
-#fm.add_all_courses(courses)
+print(f'Got {len(courses)} courses to download')
 
-for course in courses[:1]:
+for course in courses:
+    print(f'Selecting course: {course}')
     fm.select_course(course)
+    print(f'Getting lessons')
     lessons = get_all_lessons(courses_url, data, course)
+    print(f'Got {len(lessons)} to download on course {course}')
     for lesson in lessons:
+        print(f'Selecting lesson: {lesson}')
         fm.select_lesson(lesson)
-    #links = get_video_links(courses_url, data, course)
+        # print(f'Getting video links')
+        # videos = get_video_links(courses_url, data, course, lesson)
+        # print(f'Got {len(videos)} to download on lesson {lesson} of course {course}')
+        # for video in videos:
+        #     print(f'Starting download of {video[0]}')
+        #     #fm.add_video(video[0], video[1])
+        #     print(f'Finished download of {video[0]}')
+            

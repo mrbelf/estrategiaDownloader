@@ -11,6 +11,5 @@ def download_video(url, filename):
             for chunk in response.iter_content(chunk_size=1024 * 1024):  # 1 MB chunks
                 if chunk:  # Filter out keep-alive new chunks
                     file.write(chunk)
-        print(f"Download completed: {filename}")
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")

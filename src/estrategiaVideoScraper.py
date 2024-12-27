@@ -1,16 +1,17 @@
+import logging
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-START_DRIVER_DELAY = 4
-LOGIN_FILL_DELAY = .5
-LOGIN_DELAY = 8
-COURSE_SELECTION_DELAY = 5
-LESSON_SELECTION_DELAY = 5
-VIDEO_SELECTION_DELAY = 1
-SCROLL_DELAY = .5
+START_DRIVER_DELAY = 5
+LOGIN_FILL_DELAY = .2
+LOGIN_DELAY = 10
+COURSE_SELECTION_DELAY = 6
+LESSON_SELECTION_DELAY = 6
+VIDEO_SELECTION_DELAY = 1.5
+SCROLL_DELAY = .2
 
 
 def start_driver(url):
@@ -55,17 +56,46 @@ def get_course(driver, index):
 
 def enter_course(driver, courseName):
     index = get_course_index(driver ,courseName)
-    get_course(driver,index).click()
+    course = get_course(driver,index)
+
+    driver.execute_script("arguments[0].scrollIntoView(false);", course)
+    time.sleep(SCROLL_DELAY)
+    driver.execute_script("window.scrollBy(0, 200);")
+    time.sleep(SCROLL_DELAY)
+
+    course.click()
     time.sleep(COURSE_SELECTION_DELAY)
 #end Course
 
 #Lessons
+def get_lesson_title(lesson_element):
+    return lesson_element.find_element(By.XPATH, './*').text
+
 def get_lessons(driver):
     return driver.find_elements(By.CSS_SELECTOR, 'div[class="LessonCollapseHeader-title"]')
 
-def get_lesson_titles(driver):
-    return list(map(lambda lesson: lesson.find_element(By.XPATH, './*').text,get_lessons(driver)))
+def get_lesson(driver, index):
+    return get_lessons(driver)[index]
 
+def get_lesson_index(driver, name):
+    for index,lesson in enumerate(get_lessons(driver)):
+        if get_lesson_title(lesson) == name:
+            return index
+    print(f'Lesson of name {name} not found')
+
+def get_lesson_titles(driver):
+    return list(map(lambda lesson: get_lesson_title(lesson),get_lessons(driver)))
+
+def open_lesson(driver, lesson_name):
+    lesson = get_lesson(driver, get_lesson_index(driver, lesson_name))
+
+    driver.execute_script("arguments[0].scrollIntoView(false);", lesson)
+    time.sleep(SCROLL_DELAY)
+    driver.execute_script("window.scrollBy(0, 200);")
+    time.sleep(SCROLL_DELAY)
+    lesson.click()
+    print(f'{lesson_name} clicked')
+    time.sleep(LESSON_SELECTION_DELAY)
 #end Lessons
 
 def get_videos_for_open_class(driver):
@@ -117,6 +147,7 @@ def get_videos_for_open_class(driver):
 
 #=============== For External usage ===============#
 def get_all_courses(url, data):
+    logging.getLogger('selenium').setLevel(logging.WARNING)
     driver = start_driver(url)
     try:
         login(driver, data)
@@ -129,6 +160,7 @@ def get_all_courses(url, data):
     return course_titles
 
 def get_all_lessons(url, data, course):
+    logging.getLogger('selenium').setLevel(logging.WARNING)
     driver = start_driver(url)
     try:
         login(driver, data)
@@ -139,7 +171,8 @@ def get_all_lessons(url, data, course):
         driver.quit()
     return lessons
 
-def get_video_links(url, data, course):
+def get_video_links(url, data, course, lesson):
+    logging.getLogger('selenium').setLevel(logging.WARNING)
     driver = start_driver(url)
     
     try:
@@ -147,15 +180,8 @@ def get_video_links(url, data, course):
         
         enter_course(driver, course)
 
-        lessons = get_lessons(driver)
-
-        # for now we'll click the first one
-        lessons[0].click() 
-        time.sleep(LESSON_SELECTION_DELAY)
-
+        open_lesson(driver, lesson)
         
-
-        # here we'll need to iterate for each video
         links = get_videos_for_open_class(driver)
     finally:
         driver.quit()
