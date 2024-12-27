@@ -3,6 +3,7 @@ from estrategiaVideoScraper import get_all_lessons
 from estrategiaVideoScraper import get_video_links
 from estrategiaVideoScraper import get_pdf_link
 from fileManager import FileManager
+
 import json
 
 courses_url = "https://www.estrategiaconcursos.com.br/app/dashboard/cursos" 
@@ -16,7 +17,7 @@ print(f'Getting courses list')
 courses = get_all_courses(courses_url, data)
 print(f'Got {len(courses)} courses to download')
 
-for course in courses[:1]:
+for course in courses:
     print(f'Selecting course: {course}')
     fm.select_course(course)
     print(f'Getting lessons')
@@ -30,11 +31,11 @@ for course in courses[:1]:
         print(f'Downloading lesson PDF')
         fm.add_pdf(pdf_link)
         print(f'PDF Downloaded')
-        # print(f'Getting video links')
-        # videos = get_video_links(courses_url, data, course, lesson)
-        # print(f'Got {len(videos)} to download on lesson {lesson} of course {course}')
-        # for video in videos:
-        #     print(f'Starting download of {video[0]}')
-        #     #fm.add_video(video[0], video[1])
-        #     print(f'Finished download of {video[0]}')
+        print(f'Getting video links')
+        videos = get_video_links(courses_url, data, course, lesson)
+        print(f'Got {len(videos)} to download on lesson {lesson} of course {course}')
+        for video in videos:
+            print(f'Starting download of {video[0]}')
+            fm.add_video(video[0], video[1])
+            print(f'Finished download of {video[0]}')
             
