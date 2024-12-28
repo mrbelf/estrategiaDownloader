@@ -8,7 +8,7 @@ with open("../data.json", "r", encoding='utf-8') as file:
     data = json.load(file)
 
 fm = FileManager(data["save_path"])
-ds = DataScrapper(courses_url, data['email'], data['password'], False)
+ds = DataScrapper(courses_url, data['email'], data['password'], False, data['headless'])
 
 print(f'Getting courses list')
 courses = ds.get_all_courses()

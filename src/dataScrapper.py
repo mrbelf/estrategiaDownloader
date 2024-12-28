@@ -9,7 +9,6 @@ import time
 import os
 
 SELENIUM_LOG_LEVEL = logging.CRITICAL
-SELENIUM_HEADLESS = False
 START_DRIVER_DELAY = 5
 LOGIN_FILL_DELAY = .2
 LOGIN_DELAY = 10
@@ -20,11 +19,12 @@ SCROLL_DELAY = .2
 
 
 class DataScrapper:
-    def __init__(self, courses_url, user_login, user_password, selenium_logs=False):
+    def __init__(self, courses_url, user_login, user_password, selenium_logs=False, headless=False):
         self.courses_url = courses_url
         self.user_login = user_login
         self.user_password = user_password
         self.selenium_logs = selenium_logs
+        self.headless = headless
         
 
     def _start_driver(self, url):
@@ -45,7 +45,7 @@ class DataScrapper:
             chrome_options.add_argument("--silent")
             chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
 
-        if SELENIUM_HEADLESS:
+        if self.headless:
             chrome_options.add_argument("--headless")
 
 
